@@ -4,13 +4,14 @@
  *
  */
 
+import { SimulatorEvents } from "../common";
 import { AI } from ".";
 import { SimulatorOptions } from "../models/options/simulator.options";
+import { simulatorLogger } from "./logger";
 import { SimulatorEventEmitter } from "./simulator-event-emitter";
 
 class Simulator {
   private options: SimulatorOptions;
-  private logs: string[] = [];
   private isRunning: boolean = false;
   private isPaused: boolean = false;
   private eventEmitter: SimulatorEventEmitter;
@@ -54,14 +55,6 @@ class Simulator {
     if (!this.eventEmitter) {
       this.eventEmitter = new SimulatorEventEmitter();
     }
-
-    this.eventEmitter.registerEvent("simulator:log", (data) => {
-      if (typeof data === "string") {
-        this.log(data);
-      } else if (typeof data === "object") {
-        this.log(JSON.stringify(data, null, 2));
-      }
-    });
   }
 
   /**
@@ -70,7 +63,10 @@ class Simulator {
   start(): void {
     this.isRunning = true;
     const message = `SIMULATION '${this.options.name}' started.`;
-    this.logEvent("simulator:start", message);
+    simulatorLogger.log({
+      event: SimulatorEvents.SIMULATOR_START,
+      message,
+    });
   }
 
   /**
@@ -79,7 +75,10 @@ class Simulator {
   stop(): void {
     this.isRunning = false;
     const message = `SIMULATION '${this.options.name}' stopped.`;
-    this.logEvent("simulator:stop", message);
+    simulatorLogger.log({
+      event: SimulatorEvents.SIMULATOR_STOP,
+      message,
+    });
   }
 
   /**
@@ -88,7 +87,10 @@ class Simulator {
   pause(): void {
     this.isPaused = true;
     const message = `SIMULATION '${this.options.name}' paused.`;
-    this.logEvent("simulator:pause", message);
+    simulatorLogger.log({
+      event: SimulatorEvents.SIMULATOR_PAUSE,
+      message,
+    });
   }
 
   /**
@@ -97,39 +99,10 @@ class Simulator {
   resume(): void {
     this.isPaused = false;
     const message = `SIMULATION '${this.options.name}' resumed.`;
-    this.logEvent("simulator:resume", message);
-  }
-
-  /**
-   * Logs a message.
-   *
-   * @param message Message to log.
-   */
-  log(message: string): void {
-    this.logs.push(message);
-    console.log(message);
-  }
-
-  /**
-   * Logs event using the event emitter.
-   *
-   * @param event event to be logged
-   * @param message log message
-   */
-  logEvent(event: string, message: string): void {
-    this.eventEmitter.emitEvent("simulator:log", {
-      event,
+    simulatorLogger.log({
+      event: SimulatorEvents.SIMULATOR_RESUME,
       message,
     });
-  }
-
-  /**
-   * Gets the logs.
-   *
-   * @returns Logs.
-   */
-  getLogs(): string[] {
-    return this.logs;
   }
 
   /**
@@ -153,13 +126,26 @@ class Simulator {
                     Environment: ${JSON.stringify(environment, null, 2)}`,
       });
 
-      this.log(`ENVIRONMENT DESCRIPTION: ${nlDescription}`);
+      simulatorLogger.log({
+        event: SimulatorEvents.SYSTEM_LOG,
+        message: "Describing the environment.",
+        data: {
+          environment,
+          description: nlDescription,
+        },
+      });
 
       return nlDescription;
     } catch (error) {
       console.error("Error describing the environment:", error);
 
-      this.log("Error describing the environment.");
+      simulatorLogger.log({
+        event: SimulatorEvents.SYSTEM_LOG,
+        message: "Error describing the environment.",
+        data: {
+          error,
+        },
+      });
 
       return "";
     }
