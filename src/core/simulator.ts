@@ -6,15 +6,19 @@
 
 import { AI } from ".";
 import { SimulatorOptions } from "../models/options/simulator.options";
+import { SimulatorEventEmitter } from "./simulator-event-emitter";
 
 class Simulator {
   private options: SimulatorOptions;
   private logs: string[] = [];
   private isRunning: boolean = false;
   private isPaused: boolean = false;
+  private eventEmitter: SimulatorEventEmitter;
 
   constructor(options: SimulatorOptions) {
     this.options = this.initOptionsWithDefaults(options);
+    this.eventEmitter = new SimulatorEventEmitter();
+    this.init();
   }
 
   /**
@@ -42,13 +46,31 @@ class Simulator {
     };
   }
 
+  init(): void {
+    this.setupEventListeners();
+  }
+
+  setupEventListeners(): void {
+    if (!this.eventEmitter) {
+      this.eventEmitter = new SimulatorEventEmitter();
+    }
+
+    this.eventEmitter.registerEvent("simulator:log", (data) => {
+      if (typeof data === "string") {
+        this.log(data);
+      } else if (typeof data === "object") {
+        this.log(JSON.stringify(data, null, 2));
+      }
+    });
+  }
+
   /**
    * Starts the simulation.
    */
   start(): void {
     this.isRunning = true;
     const message = `SIMULATION '${this.options.name}' started.`;
-    this.log(message);
+    this.logEvent("simulator:start", message);
   }
 
   /**
@@ -57,7 +79,7 @@ class Simulator {
   stop(): void {
     this.isRunning = false;
     const message = `SIMULATION '${this.options.name}' stopped.`;
-    this.log(message);
+    this.logEvent("simulator:stop", message);
   }
 
   /**
@@ -66,7 +88,7 @@ class Simulator {
   pause(): void {
     this.isPaused = true;
     const message = `SIMULATION '${this.options.name}' paused.`;
-    this.log(message);
+    this.logEvent("simulator:pause", message);
   }
 
   /**
@@ -75,7 +97,7 @@ class Simulator {
   resume(): void {
     this.isPaused = false;
     const message = `SIMULATION '${this.options.name}' resumed.`;
-    this.log(message);
+    this.logEvent("simulator:resume", message);
   }
 
   /**
@@ -86,6 +108,19 @@ class Simulator {
   log(message: string): void {
     this.logs.push(message);
     console.log(message);
+  }
+
+  /**
+   * Logs event using the event emitter.
+   *
+   * @param event event to be logged
+   * @param message log message
+   */
+  logEvent(event: string, message: string): void {
+    this.eventEmitter.emitEvent("simulator:log", {
+      event,
+      message,
+    });
   }
 
   /**
