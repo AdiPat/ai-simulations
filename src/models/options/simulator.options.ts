@@ -3,6 +3,8 @@ import { DataNode } from "../data-node";
 type SimulatorModes = "normal" | "storyline" | "data-backed";
 
 interface SimulatorOptions {
+  name: string;
+  description: string;
   iterations: number;
   numSentients?: number;
   numNonSentients?: number;
