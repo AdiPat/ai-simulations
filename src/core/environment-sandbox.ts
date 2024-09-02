@@ -35,6 +35,7 @@ class EnvironmentSandbox {
         Given the environment, it generates an event that can be used to simulate the environment within a sandbox. 
         What event do you want to generate?
         Return the response as JSON object with the given schema.
+        Environment: ${JSON.stringify(this.environment)}
         Event: ${JSON.stringify(promptSchemaEvent)}
 
     `;
