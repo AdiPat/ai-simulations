@@ -1,4 +1,5 @@
 import { DataNode } from "../data-node";
+import { Environment } from "../environment";
 
 type SimulatorModes = "normal" | "storyline" | "data-backed";
 
@@ -15,6 +16,7 @@ interface SimulatorOptions {
   temperature?: number;
   mode?: SimulatorModes;
   data?: DataNode[];
+  environment: Environment;
 }
 
 export type { SimulatorOptions, SimulatorModes };

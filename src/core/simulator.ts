@@ -4,6 +4,7 @@
  *
  */
 
+import { AI } from ".";
 import { SimulatorOptions } from "../models/options/simulator.options";
 
 class Simulator {
@@ -37,6 +38,7 @@ class Simulator {
       temperature: options.temperature || 0.5,
       mode: options.mode || "normal",
       data: options.data || [],
+      environment: options.environment,
     };
   }
 
@@ -101,6 +103,31 @@ class Simulator {
    */
   getRunningState(): boolean {
     return this.isRunning && !this.isPaused;
+  }
+
+  /**
+   * Describes the environment.
+   * @returns Description of the environment.
+   */
+  async describeEnvironment(): Promise<string> {
+    try {
+      const environment = this.options.environment;
+
+      const nlDescription = await AI.llm({
+        prompt: `"Describe the given environment for a simulation. 
+                    Environment: ${JSON.stringify(environment, null, 2)}`,
+      });
+
+      this.log(`ENVIRONMENT DESCRIPTION: ${nlDescription}`);
+
+      return nlDescription;
+    } catch (error) {
+      console.error("Error describing the environment:", error);
+
+      this.log("Error describing the environment.");
+
+      return "";
+    }
   }
 }
 
