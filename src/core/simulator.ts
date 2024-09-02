@@ -45,7 +45,8 @@ class Simulator {
    */
   start(): void {
     this.isRunning = true;
-    console.log(`SIMULATION '${this.options.name}' started.`);
+    const message = `SIMULATION '${this.options.name}' started.`;
+    this.log(message);
   }
 
   /**
@@ -53,7 +54,7 @@ class Simulator {
    */
   stop(): void {
     this.isRunning = false;
-    let message = `SIMULATION '${this.options.name}' stopped.`;
+    const message = `SIMULATION '${this.options.name}' stopped.`;
     this.log(message);
   }
 
