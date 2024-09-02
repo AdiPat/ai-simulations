@@ -91,3 +91,5 @@ class EnvironmentSandbox {
     };
   }
 }
+
+export { EnvironmentSandbox };

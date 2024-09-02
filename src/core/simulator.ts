@@ -9,16 +9,23 @@ import { AI } from ".";
 import { SimulatorOptions } from "../models/options/simulator.options";
 import { simulatorLogger } from "./logger";
 import { SimulatorEventEmitter } from "./simulator-event-emitter";
+import readline from "readline";
+import { EnvironmentSandbox } from "./environment-sandbox";
 
 class Simulator {
   private options: SimulatorOptions;
   private isRunning: boolean = false;
   private isPaused: boolean = false;
   private eventEmitter: SimulatorEventEmitter;
+  private environmentSandbox: EnvironmentSandbox;
 
   constructor(options: SimulatorOptions) {
     this.options = this.initOptionsWithDefaults(options);
     this.eventEmitter = new SimulatorEventEmitter();
+    this.environmentSandbox = new EnvironmentSandbox(
+      this.options.environment,
+      this.eventEmitter
+    );
     this.init();
   }
 
@@ -67,18 +74,62 @@ class Simulator {
       event: SimulatorEvents.SIMULATOR_START,
       message,
     });
+    this.runSimulation();
+  }
+
+  runSimulation(): void {
+    if (this.getRunningState()) {
+      this.runIteration();
+    }
+  }
+
+  async runIteration(): Promise<void> {
+    if (this.isPaused) {
+      return;
+    }
+
+    const message = `Running iteration for SIMULATION '${this.options.name}'.`;
+    simulatorLogger.log({
+      event: SimulatorEvents.SYSTEM_LOG,
+      message,
+    });
+
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    rl.question(
+      "Press 'x' to continue simulation and 'q' to exit:",
+      (answer) => {
+        if (answer === "q" || answer === "Q") {
+          this.stop();
+        } else if (answer == "x" || answer == "X") {
+          this.environmentSandbox.getNextEnvironmentEvent().then((event) => {
+            console.log("Generated event:", event);
+            this.runIteration();
+          });
+        }
+
+        rl.close();
+      }
+    );
   }
 
   /**
    * Stops the simulation.
    */
-  stop(): void {
+  async stop(): Promise<void> {
     this.isRunning = false;
     const message = `SIMULATION '${this.options.name}' stopped.`;
     simulatorLogger.log({
       event: SimulatorEvents.SIMULATOR_STOP,
       message,
     });
+
+    await simulatorLogger.stopLogWriter();
+
+    process.exit(0);
   }
 
   /**
