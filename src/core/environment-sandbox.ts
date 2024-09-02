@@ -40,14 +40,11 @@ class EnvironmentSandbox {
 
     `;
 
-      const response = await AI.llm({
+      const event = await AI.llm({
         system: SystemPrompts.GENERIC,
         prompt,
+        json: true,
       });
-
-      const json = Utils.cleanGPTJson(response.text);
-
-      const event = Utils.parseJSON(json);
 
       if (!event) {
         simulatorLogger.log({
@@ -56,6 +53,14 @@ class EnvironmentSandbox {
         });
         return null;
       }
+
+      simulatorLogger.log({
+        event: SimulatorEvents.ENVIRONMENT_EVENT_GENERATED,
+        message: "Generated event from AI response.",
+        data: {
+          event,
+        },
+      });
 
       return event;
     } catch (error) {
