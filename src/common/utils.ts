@@ -14,4 +14,8 @@ function parseJSON(json: string): any {
   }
 }
 
-export { cleanGPTJson, parseJSON };
+function generateRandomInt(start: number, end: number): number {
+  return Math.floor(Math.random() * (end - start + 1) + start);
+}
+
+export { cleanGPTJson, parseJSON, generateRandomInt };
