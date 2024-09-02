@@ -13,7 +13,8 @@ class Logger {
   constructor(options?: { logFilePath?: string }) {
     options = options ?? {};
     this.logId = new Date().getTime();
-    this.logFilePath = options.logFilePath ?? `simulator_${this.logId}.log`;
+    this.logFilePath =
+      options.logFilePath ?? `logs/simulator_${this.logId}.log`;
 
     this.eventEmitter = new SimulatorEventEmitter();
 
