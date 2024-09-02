@@ -43,7 +43,7 @@ class Logger {
     clearInterval(this.logWriterInterval);
   }
 
-  public log(logItem: LogObject): void {
+  public async log(logItem: LogObject): Promise<void> {
     this.eventEmitter.emit(SimulatorEvents.SYSTEM_LOG, logItem);
   }
 
