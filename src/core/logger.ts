@@ -39,7 +39,8 @@ class Logger {
     });
   }
 
-  public stopLogWriter(): void {
+  public async stopLogWriter(): Promise<void> {
+    await this.writeLogsToFile(this.logFilePath); // flush logs to file
     clearInterval(this.logWriterInterval);
   }
 
