@@ -1,5 +1,6 @@
 import { SimulatorEvents } from "../common";
 import { SimulatorEventEmitter } from "./simulator-event-emitter";
+import fs from "fs/promises";
 
 interface LogObject {
   event: string;
@@ -8,16 +9,41 @@ interface LogObject {
 }
 
 class Logger {
+  private logId: number;
+  private logFilePath: string;
+  private logWriterInterval: NodeJS.Timeout;
   private eventEmitter: SimulatorEventEmitter;
   private logs: LogObject[] = [];
 
-  constructor() {
+  constructor(options?: { logFilePath?: string }) {
+    this.logId = new Date().getTime();
+    this.logFilePath = options.logFilePath ?? `simulator_${this.logId}.log`;
+
     this.eventEmitter = new SimulatorEventEmitter();
 
     this.eventEmitter.on(
       SimulatorEvents.SYSTEM_LOG,
       this.logHandler.bind(this)
     );
+
+    this.logWriterInterval = setInterval(
+      (() => {
+        this.writeLogsToFile(this.logFilePath);
+      }).bind(this),
+      1000
+    );
+  }
+
+  private async writeLogsToFile(logFilePath: string): Promise<void> {
+    const logs = JSON.stringify(this.logs, null, 2);
+
+    await fs.writeFile(logFilePath, logs).catch((error) => {
+      console.error("Error writing logs to file:", error);
+    });
+  }
+
+  private stopLogWriter(): void {
+    clearInterval(this.logWriterInterval);
   }
 
   public log(logItem: LogObject): void {
