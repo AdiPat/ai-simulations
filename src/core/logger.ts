@@ -1,12 +1,7 @@
 import { SimulatorEvents } from "../common";
 import { SimulatorEventEmitter } from "./simulator-event-emitter";
 import fs from "fs/promises";
-
-interface LogObject {
-  event: string;
-  message: string;
-  data?: Record<string, any>;
-}
+import { LogObject } from "../models";
 
 class Logger {
   private logId: number;
@@ -16,6 +11,7 @@ class Logger {
   private logs: LogObject[] = [];
 
   constructor(options?: { logFilePath?: string }) {
+    options = options ?? {};
     this.logId = new Date().getTime();
     this.logFilePath = options.logFilePath ?? `simulator_${this.logId}.log`;
 
