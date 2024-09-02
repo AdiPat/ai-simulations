@@ -1,1 +1,1 @@
-export {};
+export { Simulator } from "./simulator";
