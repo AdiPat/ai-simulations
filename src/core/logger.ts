@@ -39,7 +39,7 @@ class Logger {
     });
   }
 
-  private stopLogWriter(): void {
+  public stopLogWriter(): void {
     clearInterval(this.logWriterInterval);
   }
 
